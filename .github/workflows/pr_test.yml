@@ -1,0 +1,60 @@
+# This workflow will build a Swift project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+
+name: Swift
+
+on:
+  push:
+    branches:
+    - "qiranshen/add_test"
+  pull_request:
+    branches: 
+    - "qiranshen/add_test"
+    - "main"
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - working-directory: ./MockServer  
+      run: npm ci
+    
+    - name: Npm install 
+      working-directory: ./MockServer
+      run: npm install
+    
+    - name: Npm build 
+      working-directory: ./MockServer
+      run: npm run build --if-present
+    
+    - working-directory: MockServer
+      run: npm test
+    
+    - name: Start Server
+      working-directory: ./MockServer
+      run: node server.js &
+    
+    - name: Test Server With Curl
+      working-directory: ./MockServer
+      run: curl "http://localhost:7878/data/2.5/weather"
+    
+    - uses: actions/checkout@v3
+    - name: Test Server With Curl2
+      working-directory: ./MyLibrary
+      run: curl "http://localhost:7878/data/2.5/weather"
+    - name: Build
+      working-directory: ./MyLibrary
+      run: swift build -v
+    
+    - name: check LISTEN port
+      working-directory: ./MyLibrary
+      run: lsof -nP -iTCP:7878 -sTCP:LISTEN
+    
+    - name: Run tests
+      working-directory: ./MyLibrary
+      run: swift test -v
