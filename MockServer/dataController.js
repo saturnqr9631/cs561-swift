@@ -12,5 +12,5 @@ exports.getData = function (request, response) {
   var data = getJsonData(basePathToData, 'Tucson.json');
   setTimeout(function() {
     return response.send(data);
-  }, 200);
+  }, 100);
 };
